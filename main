@@ -12,7 +12,11 @@ DOLLAR_RUB = 'https://www.google.com/search?sxsrf=ALeKk01NWm6viYijAo3HXYOEQUyDED
 EVRO_RUB = 'https://www.google.com/search?q=евро+к+рублю&sxsrf=ALiCzsZfpTDUjvoPF2rtg4CfBh6o8vkAyQ%3A1651997130857&ei=ynl3YtqCNIX6rgS_8rSYDw&oq=доллар+к+рублю&gs_lcp=Cgdnd3Mtd2l6EAEYATIHCCMQsAMQJzIHCAAQRxCwAzIHCAAQRxCwAzIHCAAQRxCwAzIHCAAQRxCwAzIHCAAQRxCwAzIHCAAQRxCwAzIKCAAQRxCwAxDJAzIHCAAQRxCwAzIHCAAQsAMQQ0oECEEYAEoECEYYAFAAWABgtiBoAnABeACAAQCIAQCSAQCYAQDIAQrAAQE&sclient=gws-wiz'
 CNY_RUB = 'https://www.google.com/search?q=юань+к+рублю&sxsrf=ALiCzsYz1qzZADOrMP4Dv1kSQ8cnb45VTw%3A1651997140136&ei=1Hl3Yp6DCKOsrgTAkKSQCQ&oq=ю+к+рублю&gs_lcp=Cgdnd3Mtd2l6EAEYADIGCAAQBxAeMgYIABAHEB4yBggAEAcQHjIGCAAQBxAeMgYIABAHEB4yBggAEAcQHjIGCAAQBxAeMgYIABAHEB4yBggAEAcQHjIGCAAQBxAeOgcIIxCwAxAnOgcIABBHELADOgoIABBHELADEMkDOgcIABCwAxBDOgcIIxCxAhAnOgcIIxCwAhAnOgQIABANOggIABAHEAoQHjoHCAAQsQMQQ0oECEEYAEoECEYYAFCyBVi_N2DISGgCcAF4AIABXYgBkgSSAQE2mAEAoAEByAEKwAEB&sclient=gws-wiz'
 headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36'}
+NY = 'https://time100.ru/New-York'
+MSK = 'https://time100.ru/Moscow'
+KEM = 'https://time100.ru/kemerovo'
 bot = telebot.TeleBot(TOKEN)
+
 @bot.message_handler(commands=['start'])
 def start(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard = True)
@@ -27,9 +31,9 @@ def bot_message(message):
     if message.chat.type == 'private':
         if message.text == '📈Курсы валют':
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            item1 = types.KeyboardButton('💲Курс Доллара')
-            item2 = types.KeyboardButton('💲Курс Евро')
-            item3 = types.KeyboardButton('💲Курс Юань')
+            item1 = types.KeyboardButton('💵Курс Доллара')
+            item2 = types.KeyboardButton('💵Курс Евро')
+            item3 = types.KeyboardButton('💵Курс Юань')
             back = types.KeyboardButton('🔙Назад')
             markup.add(item1, item2, item3, back)
             bot.send_message(message.chat.id, '📈Курсы валют', reply_markup=markup)
@@ -46,16 +50,43 @@ def bot_message(message):
             #while bot.send_message(message.chat.id, 'Введите город:', reply_markup=markup):
                 #city(message)
                 #break
-        elif message.text == '📅Текущая дата/время':
-            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            now = datetime.datetime.today()
-            bot.send_message(message.chat.id, 'Текущая дата/время составляет:\n' + now.strftime("%d-%m-%Y\n%H:%M:%S"), reply_markup=markup)
+        #elif message.text == '📅Текущая дата/время':
+           # markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+           # now = datetime.datetime.today()
+           # bot.send_message(message.chat.id, 'Текущая дата/время составляет:\n' + now.strftime("%d-%m-%Y\n%H:%M:%S"), reply_markup=markup)
         elif message.text == '💲Курс Доллара':
             dollar(message)
         elif message.text == '💲Курс Евро':
             evro(message)
         elif message.text == '💲Курс Юань':
             cny(message)
+        elif message.text == '📅Текущая дата/время':
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            item1 = types.KeyboardButton('Нью-Йорк')
+            item2 = types.KeyboardButton('Москва')
+            item3 = types.KeyboardButton('Кемерово')
+            back = types.KeyboardButton('🔙Назад')
+            markup.add(item1, item2, item3, back)
+            bot.send_message(message.chat.id, '📅Текущая дата/время', reply_markup=markup)
+        elif message.text == 'Нью-Йорк':
+            full_page = requests.get(NY, headers=headers)
+            html = BS(full_page.content, 'html.parser')
+            convert = html.findAll("span", {"class": "time", "data-tz": "America/New_York", 'data-format': '%H:%i:%s'})
+            con = html.findAll("span", {"class": "time", "data-tz": "America/New_York", 'data-format': '%d %F %Y года, %l'})
+            bot.send_message(message.chat.id, 'В Нью-Йорке ' + con[0].text + '\n' +'Время: ' + convert[0].text)
+        elif message.text == 'Москва':
+            full_page = requests.get(MSK, headers=headers)
+            html = BS(full_page.content, 'html.parser')
+            convert = html.findAll("span", {"class": "time", "data-tz": "Europe/Moscow", 'data-format': '%H:%i:%s'})
+            con = html.findAll("span", {"class": "time", "data-tz": "Europe/Moscow", 'data-format': '%d %F %Y года, %l'})
+            bot.send_message(message.chat.id, 'В Москве ' + con[0].text + '\n' +'Время: ' + convert[0].text)
+        elif message.text == 'Кемерово':
+            full_page = requests.get(KEM, headers=headers)
+            html = BS(full_page.content, 'html.parser')
+            convert = html.findAll("span", {"class": "time", "data-tz": "Asia/Krasnoyarsk", 'data-format': '%H:%i:%s'})
+            con = html.findAll("span", {"class": "time", "data-tz": "Asia/Krasnoyarsk", 'data-format': '%d %F %Y года, %l'})
+            bot.send_message(message.chat.id, 'В Кемерово ' + con[0].text + '\n' +'Время: ' + convert[0].text)
+
 def city(message):
     if message.text:
         weather(message)
@@ -87,6 +118,5 @@ def weather(message):
         text = el.select('.wDescription .description')[0].text
         bot.send_message(message.chat.id, "Привет, погода на сегодня:\n" + t_min + ', ' + t_max + '\n' + text)
     #bot.send_message(message.chat.id, f"https://sinoptik.ua/погода-{message.text}")
-
 if __name__ == '__main__':
     bot.polling(none_stop=True)
