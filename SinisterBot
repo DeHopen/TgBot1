@@ -1,10 +1,7 @@
 import telebot
 from telebot import types
-import config
-import requests
 from bs4 import BeautifulSoup as BS
 from bs4 import BeautifulSoup
-import datetime
 import requests
 #DeHopen
 TOKEN = '5399153918:AAHH6i48a4LjIxhYsw3876q-m_mkT2V5jgk'
@@ -82,7 +79,6 @@ def bot_message(message):
             full_page = requests.get(WK, headers=headers)
             html = BS(full_page.content, 'html.parser')
             convert = html.findAll("div", {"class": "weather-text"})
-            #con = html.findAll("div",{"id": "forecastShort-content"})
             bot.send_message(message.chat.id, convert[0].text)
         elif message.text == '📋Расписание':
             lesson(message)
@@ -102,22 +98,9 @@ def evro(message):
     bot.send_message(message.chat.id, "Сейчас курс: 1 евро = " + convert[0].text + '\nДа не ссы скоро рубль будет дороже евро')
 def cny(message):
     full_page = requests.get(CNY_RUB, headers=headers)
-
-            # Разбираем через BeautifulSoup
     soup = BeautifulSoup(full_page.content, 'html.parser')
-
-            # Получаем нужное для нас значение и возвращаем его
     convert = soup.findAll("span", {"class": "DFlfde", "class": "SwHCTb", "data-precision": 2})
     bot.send_message(message.chat.id, "Сейчас курс: 1 юань = " + convert[0].text + '\nНа вашем месте я бы закупил пару штук')
-def weather(message):
-    r = requests.get(f'https://sinoptik.ua/погода-кемерово')
-    html = BS(r.content, 'html.parser')
-    for el in html.select('#content'):
-        t_min = el.select('.temperature .min')[0].text
-        t_max = el.select('.temperature .max')[0].text
-        text = el.select('.wDescription .description')[0].text
-        bot.send_message(message.chat.id, "Привет, погода на сегодня:\n" + t_min + ', ' + t_max + '\n' + text)
-    #bot.send_message(message.chat.id, f"https://sinoptik.ua/погода-{message.text}")
 def lesson(message):
     markup = types.InlineKeyboardMarkup()
     button1 = types.InlineKeyboardButton("Расписание", url='https://kemsu-schedule.web.app/')
